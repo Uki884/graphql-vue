@@ -1,7 +1,8 @@
-const {ApolloServer,gql} = require("apollo-server");
+const {ApolloServer, AuthenticationError} = require("apollo-server");
 const mongoose = require("mongoose");
 const fs =  require("fs");
 const path = require("path");
+const jwt = require("jsonwebtoken");
 
 //typeDefsとresolvers
 const filepath = path.join(__dirname,'typeDefs.graphql');
@@ -20,12 +21,28 @@ mongoose
   .then(()=> console.log("DB connected"))
   .catch(err => console.error(err));
 
+  const getUser = async token => {
+    if (token){
+      try{
+        return await jwt.verify(token, process.env.SECRET);
+      }
+      catch(err){
+        console.dir(err);
+        throw new AuthenticationError('セッションが切れました再ログインしてください。');
+      }
+    }
+  };
+
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context:{
-    User,
-    Post
+  formatError: error => ({
+    name: error.name,
+    message: error.message.replace("Context creation failed:","")
+  }),
+  context: async ({req}) => {
+    const token = req.headers["authorization"];
+    return {User,Post, currentUser: await getUser(token)};
   }
 });
 

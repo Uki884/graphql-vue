@@ -8,6 +8,10 @@ import 'material-design-icons-iconfont/dist/material-design-icons.css'
 import ApolloClient from 'apollo-boost';
 import VueApollo from 'vue-apollo';
 
+import FormAlert from '@/components/Shared/FormAlert';
+
+Vue.component('form-alert',FormAlert);
+
 Vue.use(VueApollo);
 
 //set up apolloclient
@@ -21,20 +25,24 @@ export const defaultClient = new ApolloClient({
     if (!localStorage.token){
       localStorage.setItem('token','');
     }
-
+    //ヘッダーにローカルストレージから取り出したトークンを埋め込む
     operation.setContext({
       headers:{
         authorization: localStorage.getItem('token')
       }
     })
   },
-  onError:({ grapQLErrors, networkError})=>{
+  //エラーの際の処理
+  onError:({ graphQLErrors, networkError})=>{
     if (networkError){
       console.log('[networkError]',networkError);
     }
-    if(grapQLErrors){
-      for (let err of grapQLErrors){
-        console.log('[grapQLError]',err);
+    if(graphQLErrors){
+      for (let err of graphQLErrors){
+        if(err.name == "AuthenticationError"){
+          store.commit('setAuthError',err);
+          store.dispatch('signoutUser');
+        }
       }
     }
   }
@@ -49,5 +57,8 @@ new Vue({
   router,
   store,
   vuetify,
-  render: h => h(App)
+  render: h => h(App),
+  created(){
+    this.$store.dispatch('getCurrentUser');
+  }
 }).$mount('#app')
