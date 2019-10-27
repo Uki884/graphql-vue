@@ -3,7 +3,7 @@
     <v-layout row wrap v-if="infiniteScrollPosts">
       <v-flex xs12 sm6 v-for="post in infiniteScrollPosts.posts" :key="post._id">
         <v-card hover>
-          <v-img :src="post.imageUrl" height='30vh' lazy ></v-img>
+          <v-img :src="post.imageUrl" @click.native="goToPost(post._id)" height='30vh' lazy ></v-img>
           <v-card-actions>
             <v-card-title>
               <div>
@@ -12,7 +12,8 @@
               </div>
             </v-card-title>
             <v-spacer></v-spacer>
-            <v-btn icon @click='showPostCreator = !showPostCreator'>
+            <v-btn icon @click.stop='showCreator(post._id)'>
+            <!-- <v-btn icon @click.stop='showPostCreator = !showPostCreator'> -->
               <v-icon>{{`keyboard_arrow_${showPostCreator ? 'up' : 'down '}`}}</v-icon>
             </v-btn>
           </v-card-actions>
@@ -74,6 +75,12 @@ export default {
     }
   },
   methods:{
+    showCreator(){
+      this.showPostCreator = true;
+    },
+    goToPost(postId){
+      this.$router.push(`/posts/${postId}`);
+    },
     showMorePosts(){
       this.pageNum += 1
       this.$apollo.queries.infiniteScrollPosts.fetchMore({

@@ -4,14 +4,16 @@ import router from '@/router';
 
 import { defaultClient as apolloClient} from '@/main';
 
-import { GET_CURRENT_USER, GET_POSTS ,SIGNIN_USER,SIGNUP_USER,ADD_POST} from '@/queries';
+import { GET_CURRENT_USER, GET_POSTS, SIGNIN_USER, SIGNUP_USER, ADD_POST, SEARCH_POSTS,GET_USER_POSTS} from '@/queries';
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    searchResults: [],
     posts: [],
     user: null,
+    userPosts: [],
     loading: false,
     error: null,
     authError: null
@@ -32,6 +34,17 @@ export default new Vuex.Store({
     setAuthError: ( state,payload) =>{
       state.authError = payload;
     },
+    setSearchPosts: (state, payload) => {
+      if (payload != null) {
+        state.searchResults = payload;
+      }
+    },
+    setUserPosts: (state,payload) => {
+      if (payload != null) {
+        state.userPosts = payload;
+      }
+    },
+    clearSearchResults: state => ( state.searchResults = []),
     clearUser: state => (state.user = null),
     clearError: state=> (state.error = null),
   },
@@ -65,6 +78,29 @@ export default new Vuex.Store({
         commit('setLoading',false);
         console.log(err);
       })
+    },
+    getUserPosts: ({ commit }, payload ) => {
+      apolloClient
+        .query({
+          query: GET_USER_POSTS,
+          variables: payload
+        })
+        .then(({ data }) => {
+          commit('setUserPosts', data.getUserPosts);
+        }).catch(err => { console.log(err) });
+    },
+    searchPosts: ({commit},payload) => {
+      apolloClient
+        .query({
+          query: SEARCH_POSTS,
+          variables: payload
+        })
+        .then(({ data }) => {
+        commit('setSearchPosts', data.searchPosts);
+        })
+        .catch(err => {
+          console.log(err);
+        })
     },
     addPost:({commit},payload) => {
       commit('setLoading',true);
@@ -149,9 +185,12 @@ export default new Vuex.Store({
       await apolloClient.resetStore();
     }
   },
-  getters:{
+  getters: {
+    userPosts: state => state.userPosts,
     posts: state => state.posts,
+    searchResults: state => state.searchResults,
     loading: state => state.loading,
+    userFavorites: state => state.user && state.user.favorites,
     user: state => state.user,
     error: state => state.error,
     authError: state => state.authError,

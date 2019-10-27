@@ -47,4 +47,9 @@ const PostSchema = new mongoose.Schema({
   }]
 });
 
+//検索
+PostSchema.index({
+  '$**': 'text'
+})
+
 module.exports = mongoose.model('Post', PostSchema);
