@@ -64,7 +64,7 @@
                   </v-list-item-title>
                   <v-list-item-subtitle>
                     {{message.messageUser.username}}
-                    <span class="grey--text text--lighten-1 hidden-xs-only">{{message.messageDate}}</span>
+                    <span class="grey--text text--lighten-1 hidden-xs-only">{{formatCreatedDate(message.messageDate)}}</span>
                   </v-list-item-subtitle>
                 </v-list-item-content>
                 <v-list-item-action>
@@ -82,7 +82,7 @@
 <script>
 import { GET_POST, ADD_POST_MESSAGE, LIKE_POST, UNLIKE_POST} from '@/queries'
 import { mapGetters } from 'vuex'
-
+import moment from 'moment';
 export default {
   name: "Post",
   props:["postId"],
@@ -112,6 +112,9 @@ export default {
   ...mapGetters(['user','userFavorites'])
   },
   methods:{
+    formatCreatedDate(date){
+      return moment(new Date(date)).fromNow();
+    },
     checkIfPostLiked(postId){
       if(this.userFavorites && this.userFavorites.some(fave => fave._id === postId)){
         this.postLiked = true;

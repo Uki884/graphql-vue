@@ -28,7 +28,7 @@
                     {{post.createdBy.username}}
                   </v-list-item-title>
                   <v-list-item-subtitle>
-                    {{post.createdDate}}
+                    {{formatCreatedDate(post.createdDate)}}
                   </v-list-item-subtitle>
                   <v-list-item-action>
                     <v-btn icon ripple>
@@ -54,6 +54,7 @@
 
 <script>
 import {INFINITE_SCROLL_POSTS} from '../../queries'
+import moment from 'moment';
 
 const pageSize = 2;
 export default {
@@ -75,6 +76,9 @@ export default {
     }
   },
   methods:{
+    formatCreatedDate(date){
+      return moment(new Date(date)).format("MM月DD日");
+    },
     showCreator(){
       this.showPostCreator = true;
     },
